@@ -13,7 +13,9 @@ type Address = {
     zip_code: string;
 };
 
-export default function AddressPage() {
+import { Suspense } from 'react';
+
+function AddressContent() {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [loading, setLoading] = useState(true);
     const [addingNew, setAddingNew] = useState(false);
@@ -175,5 +177,13 @@ export default function AddressPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function AddressPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center pt-24">Loading...</div>}>
+            <AddressContent />
+        </Suspense>
     );
 }

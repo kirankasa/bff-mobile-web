@@ -9,7 +9,9 @@ import { useToast } from '../../context/ToastContext';
 import Modal from '../../components/ui/Modal';
 import { API_URL } from '../../lib/api';
 
-export default function CartPage() {
+import { Suspense } from 'react';
+
+function CartContent() {
     const { items, total, updateQuantity, clearCart } = useCart();
     const { user, isAuthenticated } = useAuth();
     const { showToast } = useToast();
@@ -232,5 +234,13 @@ export default function CartPage() {
                 actionLink={modalConfig.actionLink}
             />
         </div>
+    );
+}
+
+export default function CartPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center pt-24">Loading...</div>}>
+            <CartContent />
+        </Suspense>
     );
 }
