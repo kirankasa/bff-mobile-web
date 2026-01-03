@@ -16,6 +16,7 @@ type MenuItemType = {
   description: string;
   image: string;
   categoryId: number;
+  available: boolean; // Computed by backend (Category + Item + Time)
 };
 
 export default function Home() {
@@ -50,7 +51,8 @@ export default function Home() {
                   price: item.price,
                   description: item.description,
                   image: item.image,
-                  categoryId: Number(cat.id) // Ensure we link back to category
+                  categoryId: Number(cat.id),
+                  available: item.available !== false // Default to true if undefined
                 });
               });
             }
