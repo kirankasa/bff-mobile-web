@@ -35,11 +35,11 @@ export default function Navbar() {
                 {/* Auth Links */}
                 {user ? (
                     <div className="flex items-center gap-4">
-                        <Link href="/orders" className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-orange-500 transition-colors">
-                            My Orders
+                        <Link href="/profile" className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-orange-500 transition-colors">
+                            My Account
                         </Link>
                         <span className="hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-200">
-                            Hi, {user.name.split(' ')[0]}
+                            Hi, {user.name ? user.name.split(' ')[0] : 'Guest'}
                         </span>
                         <button
                             onClick={logout}
@@ -57,6 +57,6 @@ export default function Navbar() {
                     </Link>
                 )}
             </div>
-        </nav>
+        </nav >
     );
 }
