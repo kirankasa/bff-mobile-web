@@ -82,8 +82,8 @@ export default function ProfilePage() {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id as any)}
                                         className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors mb-1 ${activeTab === tab.id
-                                                ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400'
-                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                                            ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400'
+                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                                             }`}
                                     >
                                         <Icon className="h-4 w-4" />

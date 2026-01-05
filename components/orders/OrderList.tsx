@@ -99,7 +99,7 @@ export default function OrderList() {
                         </div>
                         <div className="text-right">
                             <p className="text-xs text-gray-500 uppercase font-medium">Total</p>
-                            <p className="font-bold text-orange-600">${Number(order.total).toFixed(2)}</p>
+                            <p className="font-bold text-orange-600">₹{Number(order.total).toFixed(2)}</p>
                         </div>
                     </div>
 
@@ -111,7 +111,7 @@ export default function OrderList() {
                                         <span className="font-bold text-gray-900 dark:text-white">{item.quantity}x</span>
                                         <span className="text-gray-700 dark:text-gray-300">{item.name}</span>
                                     </div>
-                                    <span className="text-gray-500">${(item.price * item.quantity).toFixed(2)}</span>
+                                    <span className="text-gray-500">₹{(item.price * item.quantity).toFixed(2)}</span>
                                 </div>
                             ))}
                         </div>

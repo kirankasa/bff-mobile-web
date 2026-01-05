@@ -26,9 +26,7 @@ export default function LoginPage() {
             });
             const data = await res.json();
             if (res.ok) {
-                if (data.otp_debug) {
-                    alert(`Your Login OTP is: ${data.otp_debug}`);
-                }
+
                 setStep('OTP');
             } else {
                 setError(data.error || 'Failed to send OTP');
@@ -83,14 +81,23 @@ export default function LoginPage() {
                     <form onSubmit={handleSendOtp}>
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
-                            <input
-                                type="tel"
-                                required
-                                placeholder="+1234567890"
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-                                value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                            />
+                            <div className="flex w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 overflow-hidden focus-within:ring-2 focus-within:ring-orange-500 transition-all">
+                                <span className="flex items-center justify-center px-4 bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-300 font-medium border-r border-gray-300 dark:border-gray-600">
+                                    +91
+                                </span>
+                                <input
+                                    type="tel"
+                                    required
+                                    maxLength={10}
+                                    placeholder="9876543210"
+                                    className="flex-1 px-4 py-3 outline-none bg-transparent text-gray-900 dark:text-white"
+                                    value={phoneNumber}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        if (val.length <= 10) setPhoneNumber(val);
+                                    }}
+                                />
+                            </div>
                         </div>
                         <button
                             type="submit"

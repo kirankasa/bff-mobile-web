@@ -38,6 +38,16 @@ function CartContent() {
         type: 'confirm'
     });
 
+    // Fee Constants
+    const PACKAGING_CHARGE = 30;
+    const DELIVERY_CHARGE = 40;
+    const TAX_RATE = 0.05; // 5%
+
+    // Calculate Totals
+    const subtotal = total;
+    const taxAmount = subtotal * TAX_RATE;
+    const grandTotal = subtotal + PACKAGING_CHARGE + DELIVERY_CHARGE + taxAmount;
+
     // Load restaurant status
     useEffect(() => {
         fetch(`${API_URL}/api/restaurant/status`)
@@ -95,7 +105,7 @@ function CartContent() {
         try {
             const payload = {
                 items,
-                total,
+                total: grandTotal,
                 user_id: user?.id,
                 address_id: selectedAddress.id
             };
@@ -166,7 +176,7 @@ function CartContent() {
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="font-bold text-gray-900 dark:text-white">{item.name}</h3>
-                                    <p className="text-orange-500 font-bold">${(item.price * item.quantity).toFixed(2)}</p>
+                                    <p className="text-orange-500 font-bold">₹{(item.price * item.quantity).toFixed(2)}</p>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <button
@@ -204,9 +214,27 @@ function CartContent() {
                             </Link>
                         )}
 
-                        <div className="flex justify-between items-end mb-6 border-t border-gray-100 dark:border-gray-700 pt-4">
-                            <span className="text-2xl font-bold text-gray-900 dark:text-white">Total</span>
-                            <span className="text-3xl font-bold text-orange-600">${total.toFixed(2)}</span>
+                        <div className="space-y-3 mb-6 border-t border-gray-100 dark:border-gray-700 pt-4">
+                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                                <span>Item Total</span>
+                                <span>₹{subtotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                                <span>Packaging Charges</span>
+                                <span>₹{PACKAGING_CHARGE.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                                <span>Delivery Partner Fee</span>
+                                <span>₹{DELIVERY_CHARGE.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                                <span>Taxes (5%)</span>
+                                <span>₹{taxAmount.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-3 border-t border-dashed border-gray-200 dark:border-gray-600">
+                                <span className="text-xl font-bold text-gray-900 dark:text-white">To Pay</span>
+                                <span className="text-2xl font-bold text-orange-600">₹{grandTotal.toFixed(2)}</span>
+                            </div>
                         </div>
 
                         <button

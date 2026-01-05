@@ -50,7 +50,7 @@ export default function MenuItem({ item }: MenuItemProps) {
                 </div>
 
                 <div className="flex items-center justify-between mt-2">
-                    <span className="text-lg font-bold text-orange-500">${item.price.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-orange-500">₹{item.price.toFixed(2)}</span>
 
                     {/* Add / Quantity Controls */}
                     {!isAvailable ? (
