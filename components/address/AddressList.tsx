@@ -133,21 +133,6 @@ export default function AddressList({ onSelect, selectable = false }: AddressLis
 
             {addingNew && (
                 <form onSubmit={handleAddAddress} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pin Location on Map</label>
-                        <MapPicker position={coords} onLocationSelect={(lat, lng) => setCoords({ lat, lng })} />
-                        {coords && <p className="text-xs text-green-600 mt-1">Location selected: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}</p>}
-                    </div>
-                    <div>
-                        <input
-                            type="text"
-                            placeholder="Street Address"
-                            required
-                            value={newAddress.street}
-                            onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                            className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-2 text-sm"
-                        />
-                    </div>
                     <div className="grid grid-cols-2 gap-3">
                         <input
                             type="text"
@@ -155,6 +140,20 @@ export default function AddressList({ onSelect, selectable = false }: AddressLis
                             required
                             value={newAddress.city}
                             onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                            onBlur={() => {
+                                if (newAddress.city && newAddress.zip_code.length >= 5) {
+                                    // Trigger geocode
+                                    const q = `${newAddress.city} ${newAddress.zip_code}`;
+                                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`)
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            if (data && data.length > 0) {
+                                                setCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+                                            }
+                                        })
+                                        .catch(err => console.error(err));
+                                }
+                            }}
                             className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-2 text-sm"
                         />
                         <input
@@ -163,6 +162,30 @@ export default function AddressList({ onSelect, selectable = false }: AddressLis
                             required
                             value={newAddress.zip_code}
                             onChange={(e) => setNewAddress({ ...newAddress, zip_code: e.target.value })}
+                            onBlur={() => {
+                                if (newAddress.zip_code.length >= 5) {
+                                    // Trigger geocode with priority to Zip
+                                    const q = `${newAddress.zip_code}, Hyderabad, India`; // Context helps
+                                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`)
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            if (data && data.length > 0) {
+                                                setCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+                                            }
+                                        })
+                                        .catch(err => console.error(err));
+                                }
+                            }}
+                            className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-2 text-sm"
+                        />
+                    </div>
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Street Address (e.g. Flat 402, Sunshine Apts)"
+                            required
+                            value={newAddress.street}
+                            onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
                             className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-2 text-sm"
                         />
                     </div>
@@ -175,6 +198,15 @@ export default function AddressList({ onSelect, selectable = false }: AddressLis
                             className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-2 text-sm"
                         />
                     </div>
+
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Confirm Location on Map {coords && <span className="text-green-600 font-normal text-xs ml-2">(Location updated from address)</span>}
+                        </label>
+                        <MapPicker position={coords} onLocationSelect={(lat, lng) => setCoords({ lat, lng })} />
+                        <p className="text-xs text-gray-500 mt-1">Please drag the map to point to your exact building entrance.</p>
+                    </div>
+
                     <button type="submit" className="w-full bg-orange-600 text-white py-2 rounded-md hover:bg-orange-700 text-sm font-medium">
                         Save Address
                     </button>

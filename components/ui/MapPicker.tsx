@@ -70,10 +70,11 @@ export default function MapPicker({ position, onLocationSelect }: MapPickerProps
     }
 
     return (
-        <div className="h-[300px] w-full rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 z-0 relative">
+        <div className="relative h-[300px] w-full rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 z-0">
             <MapContainer
                 center={position || defaultCenter}
                 zoom={13}
+                zoomControl={true}
                 scrollWheelZoom={true}
                 style={{ height: "100%", width: "100%" }}
             >
