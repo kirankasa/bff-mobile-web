@@ -15,11 +15,15 @@ type Address = {
 
 import { Suspense } from 'react';
 
+const MapPicker = dynamic(() => import('../../components/ui/MapPicker'), { ssr: false });
+import dynamic from 'next/dynamic';
+
 function AddressContent() {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [loading, setLoading] = useState(true);
     const [addingNew, setAddingNew] = useState(false);
     const [newAddress, setNewAddress] = useState({ street: '', city: '', zip_code: '' });
+    const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
     const { user, isAuthenticated } = useAuth();
     const { showToast } = useToast();
@@ -48,7 +52,9 @@ function AddressContent() {
                     id: addr.id,
                     street: addr.address_line1,
                     city: addr.city,
-                    zip_code: addr.zip
+                    zip_code: addr.zip,
+                    latitude: addr.latitude,
+                    longitude: addr.longitude
                 }));
                 setAddresses(mapped);
             }
@@ -63,6 +69,11 @@ function AddressContent() {
         e.preventDefault();
         if (!user) return;
 
+        if (!coords) {
+            showToast('Please select a location on the map', 'error');
+            return;
+        }
+
         try {
             const res = await fetch(`${API_URL}/api/users/${user.id}/addresses`, {
                 method: 'POST',
@@ -70,7 +81,9 @@ function AddressContent() {
                 body: JSON.stringify({
                     address_line1: newAddress.street,
                     city: newAddress.city,
-                    zip: newAddress.zip_code
+                    zip: newAddress.zip_code,
+                    latitude: coords.lat,
+                    longitude: coords.lng
                 }),
             });
 
@@ -78,6 +91,7 @@ function AddressContent() {
                 showToast('Address added successfully!', 'success');
                 setAddingNew(false);
                 setNewAddress({ street: '', city: '', zip_code: '' });
+                setCoords(null);
                 fetchAddresses();
             } else {
                 showToast('Failed to add address', 'error');
@@ -115,6 +129,12 @@ function AddressContent() {
             {addingNew && (
                 <form onSubmit={handleAddAddress} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 border border-gray-200 dark:border-gray-700">
                     <div className="space-y-4">
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pin Location on Map</label>
+                            <MapPicker position={coords} onLocationSelect={(lat, lng) => setCoords({ lat, lng })} />
+                            {coords && <p className="text-xs text-green-600 mt-1">Location selected: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}</p>}
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Street Address</label>
                             <input

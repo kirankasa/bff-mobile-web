@@ -5,6 +5,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { API_URL } from '../../lib/api';
 import { Trash2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const MapPicker = dynamic(() => import('../ui/MapPicker'), { ssr: false });
 
 type Address = {
     id: number;
@@ -12,6 +15,8 @@ type Address = {
     city: string;
     zip_code: string; // mapped from zip
     phone_number?: string;
+    latitude?: number;
+    longitude?: number;
 };
 
 type AddressListProps = {
@@ -24,6 +29,7 @@ export default function AddressList({ onSelect, selectable = false }: AddressLis
     const [loading, setLoading] = useState(true);
     const [addingNew, setAddingNew] = useState(false);
     const [newAddress, setNewAddress] = useState({ street: '', city: '', zip_code: '', phone_number: '' });
+    const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
     const { user } = useAuth();
     const { showToast } = useToast();
@@ -59,6 +65,11 @@ export default function AddressList({ onSelect, selectable = false }: AddressLis
         e.preventDefault();
         if (!user) return;
 
+        if (!coords) {
+            showToast('Please select a location on the map', 'error');
+            return;
+        }
+
         try {
             const res = await fetch(`${API_URL}/api/users/${user.id}/addresses`, {
                 method: 'POST',
@@ -67,7 +78,9 @@ export default function AddressList({ onSelect, selectable = false }: AddressLis
                     address_line1: newAddress.street,
                     city: newAddress.city,
                     zip: newAddress.zip_code,
-                    phone_number: newAddress.phone_number
+                    phone_number: newAddress.phone_number,
+                    latitude: coords.lat,
+                    longitude: coords.lng
                 }),
             });
 
@@ -75,6 +88,7 @@ export default function AddressList({ onSelect, selectable = false }: AddressLis
                 showToast('Address added successfully!', 'success');
                 setAddingNew(false);
                 setNewAddress({ street: '', city: '', zip_code: '', phone_number: '' });
+                setCoords(null);
                 fetchAddresses();
             } else {
                 showToast('Failed to add address', 'error');
@@ -119,6 +133,11 @@ export default function AddressList({ onSelect, selectable = false }: AddressLis
 
             {addingNew && (
                 <form onSubmit={handleAddAddress} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pin Location on Map</label>
+                        <MapPicker position={coords} onLocationSelect={(lat, lng) => setCoords({ lat, lng })} />
+                        {coords && <p className="text-xs text-green-600 mt-1">Location selected: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}</p>}
+                    </div>
                     <div>
                         <input
                             type="text"

@@ -11,6 +11,8 @@ import { API_URL } from '../../lib/api';
 
 import { Suspense } from 'react';
 
+import ServiceabilityCheck from '../../components/address/ServiceabilityCheck';
+
 function CartContent() {
     const { items, total, updateQuantity, clearCart } = useCart();
     const { user, isAuthenticated } = useAuth();
@@ -21,6 +23,8 @@ function CartContent() {
     const [restaurantStatus, setRestaurantStatus] = useState<{ isOpen: boolean; message: string } | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState<{ id: number; text: string } | null>(null);
+    const [addressDetails, setAddressDetails] = useState<{ latitude?: number; longitude?: number } | null>(null);
+    const [isServiceable, setIsServiceable] = useState(true); // Default true until checked
 
     // Modal State
     const [modalConfig, setModalConfig] = useState<{
@@ -56,14 +60,25 @@ function CartContent() {
             .catch(err => console.error("Failed to fetch status", err));
     }, []);
 
-    // Load address from query params
+    // Load address from query params & fetch details for validation
     useEffect(() => {
         const addressId = searchParams.get('addressId');
         const addressText = searchParams.get('addressText');
-        if (addressId && addressText) {
+        if (addressId && addressText && user) {
             setSelectedAddress({ id: Number(addressId), text: addressText });
+
+            // Fetch details to get lat/lng
+            fetch(`${API_URL}/api/users/${user.id}/addresses`)
+                .then(res => res.json())
+                .then(data => {
+                    const found = data.data.find((a: any) => a.id === Number(addressId));
+                    if (found) {
+                        setAddressDetails({ latitude: found.latitude, longitude: found.longitude });
+                    }
+                })
+                .catch(err => console.error("Failed to fetch address details", err));
         }
-    }, [searchParams]);
+    }, [searchParams, user]);
 
     const handleCheckout = async () => {
         if (!isAuthenticated) {
@@ -209,6 +224,10 @@ function CartContent() {
                                     <p className="font-medium text-gray-900 dark:text-white">
                                         {selectedAddress ? selectedAddress.text : 'Select Address'}
                                     </p>
+                                    <ServiceabilityCheck
+                                        address={addressDetails}
+                                        onCheckComplete={(serviceable) => setIsServiceable(serviceable)}
+                                    />
                                 </div>
                                 <span className="text-orange-600 text-sm font-semibold">Change</span>
                             </Link>
@@ -239,12 +258,16 @@ function CartContent() {
 
                         <button
                             onClick={handleCheckout}
-                            disabled={submitting || (restaurantStatus ? !restaurantStatus.isOpen : false)}
-                            className="w-full bg-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={submitting || (restaurantStatus ? !restaurantStatus.isOpen : false) || !isServiceable}
+                            className={`w-full py-4 rounded-xl font-bold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${!isServiceable ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white'
+                                }`}
                         >
                             {submitting ? 'Processing...' :
                                 (restaurantStatus && !restaurantStatus.isOpen ? 'Restaurant Closed' :
-                                    isAuthenticated ? (selectedAddress ? 'Place Order' : 'Select Address') : 'Login to Checkout')}
+                                    isAuthenticated ? (
+                                        !isServiceable ? 'Location Not Serviceable' :
+                                            (selectedAddress ? 'Place Order' : 'Select Address')
+                                    ) : 'Login to Checkout')}
                         </button>
                     </div>
                 </>
